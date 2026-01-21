@@ -1,0 +1,33 @@
+db:
+  host: postgres
+  port: 5432
+  # REPLACE: Must match compose.yaml
+  name: ente_db
+  user: pguser
+  password: changeme_database_password
+
+apps:
+  # REPLACE: Change localhost to your Server IP for external access
+  public-albums: http://localhost:3402
+  accounts: http://localhost:3401
+
+key:
+  # REPLACE: Generate a random 32-byte base64 string
+  encryption: generate_your_own_base64_key_here
+  # REPLACE: Generate a random 64-byte base64 string
+  hash: generate_your_own_base64_hash_here
+
+jwt:
+  # REPLACE: Generate a random secret string
+  secret: generate_your_own_jwt_secret_here
+
+smtp:
+  # REPLACE: Your SMTP server (e.g., smtp.gmail.com)
+  host: YOUR_SMTP_HOST
+  port: 587
+  username: "your_email@example.com"
+  password: "your_app_password"
+  from: "your_email@example.com"
+
+internal:
+  disable-registration: true
