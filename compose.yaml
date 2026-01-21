@@ -1,0 +1,66 @@
+services:
+  postgres:
+    image: docker.io/library/postgres:18.1-trixie
+    # or whatever the version is/ latest version is
+    container_name: postgres
+    mem_limit: 4G
+    environment:
+      # REPLACE: Choose a database username
+      POSTGRES_USER: pguser
+      # REPLACE: Choose a strong database password
+      POSTGRES_PASSWORD: changeme_database_password 
+      # REPLACE: Choose a database name
+      POSTGRES_DB: ente_db
+      TZ: America/New_York
+    healthcheck:
+      # REPLACE: Match the -d (db) and -U (user) to the environment variables above
+      test: ["CMD-SHELL", "pg_isready -d ente_db -U pguser -h localhost"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - ./db-data:/var/lib/postgresql:Z
+    restart: unless-stopped
+
+  museum:
+    image: ghcr.io/ente-io/server
+    container_name: museum
+    mem_limit: 4G
+    mem_reservation: 1G
+    ports:
+      - "8085:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./museum.yaml:/etc/ente/museum.yaml:ro
+      - ./data:/data:rw
+      - ./ente_logs:/var/logs/ente:Z
+    environment:
+      ENTE_CONFIG_PATH: /etc/ente/museum.yaml
+      ENTE_DB_HOST: postgres
+      ENTE_DB_PORT: 5432
+      # REPLACE: Must match postgres service environment variables
+      ENTE_DB_NAME: ente_db
+      ENTE_DB_USER: pguser
+      ENTE_DB_PASSWORD: changeme_database_password
+      TZ: America/New_York
+    restart: unless-stopped
+
+  web:
+    image: ghcr.io/ente-io/web
+    container_name: web
+    ports:
+      - "3401:3001"
+      - "3403:3003"
+    environment:
+      # REPLACE: Change 'YOUR_SERVER_IP' to your host IP (e.g., 192.168.1.50)
+      ENTE_API_ORIGIN: http://YOUR_SERVER_IP:8085
+      ENTE_ACCOUNTS_ORIGIN: http://YOUR_SERVER_IP:3401
+      ENTE_AUTH_ORIGIN: http://YOUR_SERVER_IP:3403
+      ENTE_ALBUMS_ORIGIN: http://YOUR_SERVER_IP:3402
+      ENTE_PHOTOS_ORIGIN: http://YOUR_SERVER_IP:3400
+      # REPLACE: Change to your actual public domain if using a reverse proxy
+      NEXT_PUBLIC_ENTE_ENDPOINT: https://enteapi.yourdomain.com
+      TZ: America/New_York
+    restart: unless-stopped
