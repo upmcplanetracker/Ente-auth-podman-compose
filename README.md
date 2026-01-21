@@ -64,19 +64,19 @@ Because Podman Compose doesn't automatically "watch" for new images like WUD, yo
 
 This checks the registry and downloads any new layers for Museum, Web, or Postgres:
 
-podman-compose pull
+`podman-compose pull`
 
 ### Step 2: Recreate Containers
 
 Running `up -d` again will force Podman to compare the running container with the new image and recreate it if they don't match:
 
-podman-compose up -d
+`podman-compose up -d`
 
 ### Step 3: Post-Update Cleanup
 
 Remove the old, "dangling" image layers that are no longer used to keep your storage clean:
 
-podman image prune -f
+`podman image prune -f`
 
 6\. Safety & Database Backups
 -----------------------------
@@ -87,14 +87,12 @@ Since this stack manages your 2FA and Auth data, a **Safety Backup** is mandator
 
 Before making any major configuration changes, manually copy your database files to a "frozen" directory:
 
-cp -r ~/my-ente/db-data ~/my-ente/db-data-frozen-$(date +%F)
+`cp -r ~/my-ente/db-data ~/my-ente/db-data-frozen-$(date +%F)`
 
 ### Automated SQL Backup
 
 Add this to your crontab (`crontab -e`) to backup the database every night at 3:00 AM:
 
-00 03 \* \* \* podman exec postgres pg\_dump -U pguser ente\_db > ~/my-ente/backups/ente\_auth\_$(date +\\%F).sql
+`00 03 \* \* \* podman exec postgres pg\_dump -U pguser ente\_db > ~/my-ente/backups/ente\_auth\_$(date +\\%F).sql`
 
 **Pro-Tip:** Store your `museum.yaml` and your SQL backups in different physical locations (or an encrypted cloud bucket). If you lose your `encryption` and `hash` keys from the yaml file, your database becomes unreadable!
-
-One more thing for your GitHub: generate-secrets.sh Since you have those Base64 keys in museum.yaml that everyone has to change, you should include this tiny script in your repo. It makes it easy for the user to get the right format. generate-secrets.sh Bash #!/bin/bash echo "--- COPY THESE INTO YOUR museum.yaml ---" echo "" echo "Encryption Key (32-byte):" openssl rand -base64 32 echo "" echo "Hash Key (64-byte):" openssl rand -base64 64 echo "" echo "JWT Secret:" openssl rand -base64 32 Would you like me to move on to the next container, or are we ready to wrap up the Ente Auth section?
